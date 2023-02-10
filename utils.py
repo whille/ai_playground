@@ -9,6 +9,6 @@ def loop_qa(fn, esc='\x1b', **kwargs):
         elif not prompt:
             continue
         try:
-            print(fn(prompt, **kwargs))
+            fn(prompt, **kwargs)
         except Exception as e:
-            print(e)
+            print(f"e: {e}")
