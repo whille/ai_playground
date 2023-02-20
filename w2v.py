@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import numpy as np
 from collections import defaultdict
+
+import numpy as np
 
 # https://nathanrooy.github.io/posts/2018-03-22/word2vec-from-scratch-with-python-and-numpy/
 
