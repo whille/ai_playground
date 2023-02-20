@@ -1,2 +1,6 @@
 SpeechRecognition
 pyttsx3
+openai
+toml
+baidu-aip
+pyaudio
