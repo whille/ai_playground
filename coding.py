@@ -40,8 +40,7 @@ def test_is_parlindrome():
     assert not is_parlindrome(-1231)
 
 
-# use as a dictionary
-def translate():
+def use_as_dictionary():
     {
         "en": {
             "好": "good",
