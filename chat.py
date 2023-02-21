@@ -5,10 +5,11 @@ import openai
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 assert(openai.api_key)
-max_tokens = 300
+max_tokens = 512    #2048
 
 
-def iteract(prompt, user='', temp=0):
+def interact(prompt, user='', temp=0):
+    print('prompt:', prompt)
     response = openai.Completion.create(model="text-davinci-003",
                                         prompt=prompt, temperature=temp,
                                         max_tokens=max_tokens, user=user,
@@ -19,11 +20,14 @@ def iteract(prompt, user='', temp=0):
 
 
 def show(gen):
+    txt = ''
     for w in gen:
         print(w, end='')
+        txt += w
     print('')
+    return txt
 
 
 if __name__ == "__main__":
     from utils import loop_qa
-    loop_qa(iteract, show, user='user001', temp=0.2)
+    loop_qa(interact, show, user='user001', temp=0.2)
