@@ -4,8 +4,8 @@ import os
 import openai
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-assert(openai.api_key)
-max_tokens = 512    #2048
+assert openai.api_key
+max_tokens = 512    # 2048
 
 
 def interact(prompt, user='', temp=0):
