@@ -20,12 +20,9 @@ def interact(prompt, user='', temp=0):
 
 
 def show(gen):
-    txt = ''
     for w in gen:
         print(w, end='')
-        txt += w
     print('')
-    return txt
 
 
 if __name__ == "__main__":

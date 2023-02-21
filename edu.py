@@ -4,12 +4,16 @@ import speech_recognition as sr
 import pyttsx3
 from aip import AipSpeech
 import toml
-from chat import interact, show
+import platform
+from chat import interact
 
 class Tutor:
     def __init__(self):
         self.r = sr.Recognizer()
+        # usage: https://pypi.org/project/pyttsx3/
         self.engine = pyttsx3.init()
+        if platform.machine == 'armv7l':
+            self.engine.setProperty('voice', "Mandarin")
         cfg = toml.load('/etc/baidu.toml')['speech']
         # https://console.bce.baidu.com/ai/#/ai/speech/overview/index
         self.bd = AipSpeech(cfg['APP_ID'], cfg['APP_KEY'], cfg['SECRET_KEY'])
@@ -36,28 +40,43 @@ class Tutor:
             raise Exception(result['err_msg'])
 
     def speak(self, text):
+        if not text:
+            return
+        print("start speak...")
         self.engine.say(text)
         self.engine.runAndWait()
 
     async def loop(self, break_txt='\x1b'):    # Esc
         while True:
             text = await self.get_input()
-            if text:
-                if text == break_txt or len(text) < 2:
-                    break
-                print(f"I heard you say: {text}, {len(text)}")
-                try:
-                    response = show(interact(text, user=''))
-                    if response:
-                        self.speak(response)
-                except Exception as e:
-                    print(f"e: {e}")
+            if not text:
+                continue
+            if text == break_txt or len(text) < 2:
+                break
+            print(f"I heard you say: {text}, {len(text)}")
+            try:
+                response = self.show(interact(text, user=''))
+                self.speak(response)
+            except Exception as e:
+                print(f"e: {e}")
+
+    def show(self, gen):
+        txt = ''
+        for w in gen:
+            print(w, end='')
+            txt += w
+        print('')
+        return txt
 
     async def get_input(self):
-        #result = await self.text_input()
         tasks = [self.text_input(), self.voice_input()]
-        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-        result = done.pop().result()
+        done, pending = await asyncio.wait([asyncio.create_task(t) for t in tasks], return_when=asyncio.FIRST_COMPLETED)
+        result = None
+        for task in done:
+            # print(f'{task} completed')
+            result = task.result()
+        for task in pending:
+            task.cancel()
         return result
 
     async def text_input(self):
