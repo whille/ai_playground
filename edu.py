@@ -2,11 +2,10 @@
 import asyncio
 import speech_recognition as sr
 import pyttsx3
-from aip import AipSpeech
-import toml
 import platform
 from chat import interact
 from bd_voice import Baidu_Voice
+from a_in import AInput
 
 
 class Tutor:
@@ -17,6 +16,7 @@ class Tutor:
         if platform.machine == 'armv7l':
             self.engine.setProperty('voice', "Mandarin")
         self.bd = Baidu_Voice()
+        self.aio = AInput()
 
     async def listen(self, sample_rate=16000):
         with sr.Microphone(sample_rate=sample_rate) as source:
@@ -33,9 +33,9 @@ class Tutor:
 
     # TODO Ctrl+C to stop
     def speak(self, text):
-        if not text or len(text) > 64:
+        if not text or text == '\n' or len(text) > 64:
             return
-        print("start speak...")
+        print('speaking...')
         self.engine.say(text)
         self.engine.runAndWait()
 
@@ -48,16 +48,21 @@ class Tutor:
                 break
             print(f"I heard you say: {text}({len(text)})")
             try:
-                response = self.show(interact(text, user=''))
-                self.speak(response)
+                self.show(interact(text, user=''))
             except Exception as e:
                 print(f"e: {e}")
+        await self.bd.on_close()
 
     def show(self, gen):
         txt = ''
+        cur_line = ''
         for w in gen:
             print(w, end='')
-            txt += w
+            cur_line += w
+            if cur_line.endswith('\n'):
+                self.speak(w)
+                txt += cur_line
+                cur_line = ''
         print('')
         return txt
 
@@ -67,15 +72,13 @@ class Tutor:
             [asyncio.create_task(t) for t in tasks], return_when=asyncio.FIRST_COMPLETED)
         result = None
         for task in done:
-            # print(f'{task} completed')
             result = task.result()
         for task in pending:
             task.cancel()
         return result
 
     async def text_input(self):
-        text = await asyncio.to_thread(input, "waiting...(Esc)")
-        return text
+        return await self.aio.input("waiting...(Esc)")
 
     async def voice_input(self):
         return await self.listen()

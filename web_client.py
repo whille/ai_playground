@@ -9,7 +9,6 @@ class AWeb_Cient:
         self.url = url
         self.session = None
         self.ws = None
-        self.heartbeat_task = None
 
     async def on_message(self, message):
         pass
@@ -32,7 +31,6 @@ class AWeb_Cient:
         if not self.ws:
             self.session = aiohttp.ClientSession()
             self.ws = await self.session.ws_connect(self.url, heartbeat=5)
-            self.heartbeat_task = asyncio.create_task(self.heartbeat())
 
     async def run(self):
         async for msg in self.ws:
@@ -45,8 +43,3 @@ class AWeb_Cient:
     async def on_close(self):
         await self.session.close()
         self.ws = None
-        self.heartbeat_task.cancel()
-        try:
-            await self.heartbeat_task
-        except asyncio.CancelledError:
-            pass
