@@ -2,8 +2,8 @@
 import asyncio
 import speech_recognition as sr
 import pyttsx3
-from aip import AipSpeech
-import toml
+# from aip import AipSpeech
+# import toml
 import platform
 from chat import interact
 from bd_voice import Baidu_Voice
