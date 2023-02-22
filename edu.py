@@ -2,7 +2,7 @@
 import asyncio
 import speech_recognition as sr
 import pyttsx3
-# from aip import AipSpeech
+from aip import AipSpeech
 # import toml
 import platform
 from chat import interact
