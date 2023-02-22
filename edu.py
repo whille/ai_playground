@@ -64,8 +64,7 @@ class Tutor:
     async def get_input(self):
         tasks = [self.text_input(), self.listen()]
         done, pending = await asyncio.wait(
-                [asyncio.create_task(t) for t in tasks],
-                return_when=asyncio.FIRST_COMPLETED)
+            [asyncio.create_task(t) for t in tasks], return_when=asyncio.FIRST_COMPLETED)
         result = None
         for task in done:
             # print(f'{task} completed')
