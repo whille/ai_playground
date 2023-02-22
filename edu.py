@@ -60,10 +60,11 @@ class Tutor:
             print(w, end='')
             cur_line += w
             if cur_line.endswith('\n'):
-                self.speak(w)
+                self.speak(cur_line)
                 txt += cur_line
                 cur_line = ''
         print('')
+        self.speak(cur_line)
         return txt
 
     async def get_input(self):
