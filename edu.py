@@ -1,20 +1,16 @@
 #!/usr/bin/env python
 import asyncio
 import speech_recognition as sr
-import pyttsx3
-import platform
 from chat import interact
 from bd_voice import Baidu_Voice
 from a_in import AInput
-
+from utils import logger
+from speaker import play_audio_bytes
 
 class Tutor:
     def __init__(self):
         self.r = sr.Recognizer()
         # usage: https://pypi.org/project/pyttsx3/
-        self.engine = pyttsx3.init()
-        if platform.machine == 'armv7l':
-            self.engine.setProperty('voice', "Mandarin")
         self.bd = Baidu_Voice()
         self.aio = AInput()
 
@@ -33,11 +29,18 @@ class Tutor:
 
     # TODO Ctrl+C to stop
     def speak(self, text):
-        if not text or text == '\n' or len(text) > 64:
+        if not text or text == '\n' or len(text) > 128:
             return
         print('speaking...')
-        self.engine.say(text)
-        self.engine.runAndWait()
+        options = {
+            'vol': 5,  # volume
+        }
+        # https://ai.baidu.com/ai-doc/SPEECH/Gk38y8lzk
+        res = self.bd.speaker.synthesis(text, 'zh', 1, options)
+        if not isinstance(res, dict):
+            play_audio_bytes(res)
+        else:
+            logger.warning(res)
 
     async def loop(self, break_txt='\x1b'):    # Esc
         while True:
@@ -51,7 +54,6 @@ class Tutor:
                 self.show(interact(text, user=''))
             except Exception as e:
                 print(f"e: {e}")
-        await self.bd.on_close()
 
     def show(self, gen):
         txt = ''

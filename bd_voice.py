@@ -4,8 +4,10 @@ import json
 import uuid
 import toml
 import asyncio
-from web_client import AWeb_Cient
 from utils import logger
+from aip import AipSpeech
+from web_client import AWeb_Cient
+
 
 # https://ai.baidu.com/ai-doc/SPEECH/2k5dllqxj#demo
 # https://github.com/Baidu-AIP/speech-demo/blob/master/rest-api-asr/python/asr_json.py
@@ -20,8 +22,9 @@ class Baidu_Voice(AWeb_Cient):
         self.cfg = toml.load('/etc/baidu.toml')['speech']
         uri = URI + "?sn=" + str(uuid.uuid1())
         logger.info(f"uri: {uri}, cfg: {self.cfg}")
-        self.cb = None
         super(Baidu_Voice, self).__init__(uri)
+        cfg = toml.load('/etc/baidu.toml')['speech']
+        self.speaker = AipSpeech(cfg['APP_ID'], cfg['APP_KEY'], cfg['SECRET_KEY'])
 
     async def send_start_params(self, dev_pid=15372):
         req = {
@@ -42,16 +45,11 @@ class Baidu_Voice(AWeb_Cient):
         await self.ws.send_json({"type": "HEARTBEAT"})
 
     async def recognize(self, audo):
-        await self.connect()
-        await self.send_start_params()
-        await self.send_audio(audo, 3000)
-        await self.send_finish()
-        return await self.on_result()
-
-    async def on_result(self):
-        async for msg in self.run():
-            if msg:
-                return msg
+        async with self.connect_ws() as ws:
+            await self.send_start_params()
+            await self.send_audio(audo, 3000)
+            await self.send_finish()
+            return await self.handle_msg(ws)
 
     async def send_audio(self, pcm, chunk_ms=5000):
         """
